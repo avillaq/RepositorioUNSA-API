@@ -30,6 +30,11 @@ class Documentos(db.Model):
             'id_editor': self.id_editor
         }
 
+@app.route("/", methods=["GET"])
+def get_documentos():
+    documentos = Documentos.query.all()
+    return jsonify([documento.to_dict() for documento in documentos])
+
 
 @app.route("/api/docs")
 def hello_world():
