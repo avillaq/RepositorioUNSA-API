@@ -9,8 +9,7 @@ def create_app():
 
     db.init_app(app)
 
-    with app.app_context():
-        from . import routes  # Importar las rutas
-        db.create_all()  # Crear las tablas si no existen
+    from .routes import routes
+    app.register_blueprint(routes)
 
     return app
