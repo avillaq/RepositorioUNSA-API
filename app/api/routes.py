@@ -1,5 +1,5 @@
 from flask import jsonify
-from ..models import Documento
+from app.api.models import Documento
 from app.api import bp
 
 @bp.route('/documentos', methods=['GET'])
