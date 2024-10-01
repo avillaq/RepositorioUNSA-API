@@ -13,6 +13,10 @@ def get_documentos():
     sort_by = request.args.get('sort_by', 'titulo')  # Por defecto es el título
     order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
 
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    per_page = request.args.get('per_page', 10, type=int)  # Resultados por página. 10 por defecto
+
     query = Documento.query
 
     # Filtrar la consulta
@@ -30,10 +34,10 @@ def get_documentos():
         else:
             query = query.order_by(getattr(Documento, sort_by))
 
-    # Consultamos
-    documentos = query.all()
+    # Aplicar paginación
+    documentos_paginados = query.paginate(page=page, per_page=per_page)
 
-    resultado = [documento.format() for documento in documentos]
+    resultado = [documento.format() for documento in documentos_paginados.items]
     return jsonify(resultado)
 
 @bp.route('/')
