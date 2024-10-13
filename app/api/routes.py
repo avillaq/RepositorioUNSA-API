@@ -1,4 +1,7 @@
 from flask import jsonify, request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from app.api.models import Documento
 from app.api import bp
 from app.extensions import db
@@ -42,4 +45,4 @@ def get_documentos():
 
 @bp.route('/')
 def index():
-    return 'This is The Main Blueprint'
+    return 'This is the API'
