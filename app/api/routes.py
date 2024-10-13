@@ -87,6 +87,13 @@ def get_colecciones():
     }
     return jsonify(resultado)
 
+@bp.route('/colecciones/<int:id>/', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_coleccion(id):
+    coleccion = Coleccion.query.get_or_404(id)
+    return jsonify(coleccion.format())
+
 @bp.errorhandler(429)
 def ratelimit_error(e):
     return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
