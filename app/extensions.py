@@ -12,6 +12,7 @@ limiter = Limiter(
     default_limits=["200/day", "50/hour"],
 )
 
+# Configuración para el cache
 cache = Cache(config = {
     "DEBUG": True,
     "CACHE_TYPE": "SimpleCache",

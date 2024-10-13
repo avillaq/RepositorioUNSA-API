@@ -1,10 +1,11 @@
 from flask import jsonify, request
 from app.api.models import Documento, Coleccion
 from app.api import bp
-from app.extensions import db, limiter
+from app.extensions import db, limiter, cache
 
 @bp.route('/documentos', methods=['GET'])
 @limiter.limit("10/minute")
+@cache.cached(query_string=True)
 def get_documentos():
     titulo = request.args.get('titulo')
     fecha = request.args.get('fecha')
@@ -48,6 +49,7 @@ def get_documentos():
 
 @bp.route('/colecciones', methods=['GET'])
 @limiter.limit("10/minute")
+@cache.cached(query_string=True)
 def get_colecciones():
     nombre_coleccion = request.args.get('nombre_coleccion')
 
