@@ -38,7 +38,12 @@ def get_documentos():
     # Aplicar paginación
     documentos_paginados = query.paginate(page=page, per_page=per_page)
 
-    resultado = [documento.format() for documento in documentos_paginados.items]
+    resultado = {
+        'page': documentos_paginados.page,
+        'total_pages': documentos_paginados.pages,
+        'total_items': documentos_paginados.total,
+        'items': [documento.format() for documento in documentos_paginados.items]
+    }
     return jsonify(resultado)
 
 @bp.route('/colecciones', methods=['GET'])
@@ -68,7 +73,12 @@ def get_colecciones():
     # Aplicar paginación
     colecciones_paginados = query.paginate(page=page, per_page=per_page)
 
-    resultado = [coleccion.format() for coleccion in colecciones_paginados.items]
+    resultado = {
+        'page': colecciones_paginados.page,
+        'total_pages': colecciones_paginados.pages,
+        'total_items': colecciones_paginados.total,
+        'items': [coleccion.format() for coleccion in colecciones_paginados.items]
+    }
     return jsonify(resultado)
 
 @bp.route('/')
