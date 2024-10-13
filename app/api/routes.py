@@ -2,11 +2,19 @@ from flask import jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from app.api.models import Documento
+from app.api.models import Documento, Coleccion
 from app.api import bp
 from app.extensions import db
 
+# Configuracion para limitar el número de peticiones
+limiter = Limiter(
+    get_remote_address,
+    app=bp,
+    default_limits=["200/day", "50/hour"],
+)
+
 @bp.route('/documentos', methods=['GET'])
+@limiter.limit("10/minute")
 def get_documentos():
     titulo = request.args.get('titulo')
     fecha = request.args.get('fecha')
