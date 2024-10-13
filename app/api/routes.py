@@ -1,17 +1,7 @@
 from flask import jsonify, request
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-
 from app.api.models import Documento, Coleccion
 from app.api import bp
-from app.extensions import db
-
-# Configuracion para limitar el número de peticiones
-limiter = Limiter(
-    get_remote_address,
-    app=bp,
-    default_limits=["200/day", "50/hour"],
-)
+from app.extensions import db, limiter
 
 @bp.route('/documentos', methods=['GET'])
 @limiter.limit("10/minute")
@@ -52,12 +42,11 @@ def get_documentos():
     return jsonify(resultado)
 
 @bp.route('/colecciones', methods=['GET'])
-@limiter.limit("1/minute")
+@limiter.limit("10/minute")
 def get_colecciones():
     nombre_coleccion = request.args.get('nombre_coleccion')
 
     # Parametros para ordenar
-    sort_by = request.args.get('sort_by', 'nombre_coleccion')  # Por defecto es el título
     order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
 
     # Paginación
@@ -71,11 +60,10 @@ def get_colecciones():
         query = query.filter(Coleccion.nombre_coleccion.like(f'%{nombre_coleccion}%'))
 
     # Ordenar la consulta
-    if sort_by in ['nombre_coleccion']:
-        if order == 'desc':
-            query = query.order_by(db.desc(getattr(Coleccion, sort_by)))
-        else:
-            query = query.order_by(getattr(Coleccion, sort_by))
+    if order == 'desc':
+        query = query.order_by(db.desc(Coleccion.nombre_coleccion))
+    else:
+        query = query.order_by(Coleccion.nombre_coleccion)
 
     # Aplicar paginación
     colecciones_paginados = query.paginate(page=page, per_page=per_page)
