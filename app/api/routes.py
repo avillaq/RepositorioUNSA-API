@@ -98,6 +98,10 @@ def get_coleccion(id):
 def ratelimit_error(e):
     return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
 
+@bp.errorhandler(404)
+def not_found_error(e):
+    return jsonify(error="Not found", message=str(e.description)), 404
+
 @bp.route('/')
 def index():
     return jsonify(message="Welcome to the API")
