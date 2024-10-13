@@ -47,7 +47,7 @@ def get_documentos():
     return jsonify(resultado)
 
 @bp.route('/colecciones', methods=['GET'])
-@limiter.limit("10/minute")
+@limiter.limit("1/minute")
 def get_colecciones():
     nombre_coleccion = request.args.get('nombre_coleccion')
 
@@ -80,6 +80,10 @@ def get_colecciones():
         'items': [coleccion.format() for coleccion in colecciones_paginados.items]
     }
     return jsonify(resultado)
+
+@bp.errorhandler(429)
+def ratelimit_error(e):
+    return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
 
 @bp.route('/')
 def index():
