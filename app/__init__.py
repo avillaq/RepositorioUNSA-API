@@ -1,5 +1,5 @@
 from flask import Flask
-from app.extensions import db, limiter
+from app.extensions import db, limiter, cache
 
 def create_app():
     app = Flask(__name__)
@@ -7,6 +7,7 @@ def create_app():
 
     db.init_app(app)
     limiter.init_app(app)
+    cache.init_app(app)
 
     # Registrar los Blueprints
     from app.api import bp as api_bp
