@@ -51,6 +51,38 @@ def get_documentos():
     resultado = [documento.format() for documento in documentos_paginados.items]
     return jsonify(resultado)
 
+@bp.route('/colecciones', methods=['GET'])
+@limiter.limit("1/minute")
+def get_colecciones():
+    nombre_coleccion = request.args.get('nombre_coleccion')
+
+    # Parametros para ordenar
+    sort_by = request.args.get('sort_by', 'nombre_coleccion')  # Por defecto es el título
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    per_page = request.args.get('per_page', 10, type=int)  # Resultados por página. 10 por defecto
+
+    query = Coleccion.query
+
+    # Filtrar la consulta
+    if nombre_coleccion:
+        query = query.filter(Coleccion.nombre_coleccion.like(f'%{nombre_coleccion}%'))
+
+    # Ordenar la consulta
+    if sort_by in ['nombre_coleccion']:
+        if order == 'desc':
+            query = query.order_by(db.desc(getattr(Coleccion, sort_by)))
+        else:
+            query = query.order_by(getattr(Coleccion, sort_by))
+
+    # Aplicar paginación
+    colecciones_paginados = query.paginate(page=page, per_page=per_page)
+
+    resultado = [coleccion.format() for coleccion in colecciones_paginados.items]
+    return jsonify(resultado)
+
 @bp.route('/')
 def index():
     return 'This is the API'
