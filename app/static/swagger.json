@@ -1,0 +1,213 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "API Documentation for Repositorio UNSA",
+    "version": "1.0.0",
+    "title": "Repositorio UNSA API"
+  },
+  "host": "localhost:5000",
+  "basePath": "/api",
+  "tags": [
+    {
+      "name": "documentos",
+      "description": "Operations related to documentos"
+    },
+    {
+      "name": "colecciones",
+      "description": "Operations related to colecciones"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/documentos": {
+      "get": {
+        "tags": [
+          "documentos"
+        ],
+        "summary": "Get list of documentos",
+        "description": "",
+        "operationId": "getDocumentos",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "titulo",
+            "in": "query",
+            "description": "Titulo of the documento",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha of the documento",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "in": "query",
+            "description": "URI of the documento",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Field to sort by",
+            "required": false,
+            "type": "string",
+            "default": "titulo"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Order of sorting",
+            "required": false,
+            "type": "string",
+            "default": "asc"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of items per page",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Documento"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/colecciones": {
+      "get": {
+        "tags": [
+          "colecciones"
+        ],
+        "summary": "Get list of colecciones",
+        "description": "",
+        "operationId": "getColecciones",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "nombre_coleccion",
+            "in": "query",
+            "description": "Nombre of the coleccion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Order of sorting",
+            "required": false,
+            "type": "string",
+            "default": "asc"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "type": "integer",
+            "default": 1
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Number of items per page",
+            "required": false,
+            "type": "integer",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Coleccion"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Documento": {
+      "type": "object",
+      "properties": {
+        "id_documento": {
+          "type": "integer",
+          "description": "The unique identifier of a document"
+        },
+        "titulo": {
+          "type": "string",
+          "description": "The title of the document"
+        },
+        "resumen": {
+          "type": "string",
+          "description": "The summary of the document"
+        },
+        "uri": {
+          "type": "string",
+          "description": "The URI of the document"
+        },
+        "fecha": {
+          "type": "string",
+          "description": "The date of the document"
+        },
+        "url_pdf": {
+          "type": "string",
+          "description": "The PDF URL of the document"
+        },
+        "id_coleccion": {
+          "type": "integer",
+          "description": "The collection ID of the document"
+        },
+        "id_editor": {
+          "type": "integer",
+          "description": "The editor ID of the document"
+        }
+      }
+    },
+    "Coleccion": {
+      "type": "object",
+      "properties": {
+        "id_coleccion": {
+          "type": "integer",
+          "description": "The unique identifier of a collection"
+        },
+        "nombre_coleccion": {
+          "type": "string",
+          "description": "The name of the collection"
+        }
+      }
+    }
+  }
+}
