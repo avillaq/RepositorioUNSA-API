@@ -7,7 +7,7 @@ class Documento(db.Model):
     titulo = db.Column(db.String(255), nullable=False)
     resumen = db.Column(db.Text, nullable=True)
     uri = db.Column(db.String(255), nullable=True)
-    fecha = db.Column(db.String(4), nullable=True)
+    fecha = db.Column(db.Date, nullable=True)
     url_pdf = db.Column(db.String(255), nullable=True)
     id_coleccion = db.Column(db.Integer, nullable=True)
     id_editor = db.Column(db.Integer, nullable=True)
@@ -25,4 +25,19 @@ class Documento(db.Model):
             'url_pdf': self.url_pdf,
             'id_coleccion': self.id_coleccion,
             'id_editor': self.id_editor
+        }
+
+class Coleccion(db.Model):
+    __tablename__ = 'colecciones'
+
+    id_coleccion = db.Column(db.Integer, primary_key=True)
+    nombre_coleccion = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<Coleccion {self.nombre_coleccion}>"
+
+    def format(self):
+        return {
+            'id': self.id_coleccion,
+            'nombre_coleccion': self.nombre_coleccion,
         }
