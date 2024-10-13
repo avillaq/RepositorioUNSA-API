@@ -11,7 +11,7 @@ def get_documentos():
     fecha = request.args.get('fecha')
 
     # Parametros para ordenar
-    sort_by = request.args.get('sort_by', 'titulo')  # Por defecto es el título
+    sort = request.args.get('sort', 'titulo')  # Por defecto es el título
     order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
 
     # Paginación
@@ -27,11 +27,11 @@ def get_documentos():
         query = query.filter_by(fecha=fecha)
 
     # Ordenar la consulta
-    if sort_by in ['titulo', 'fecha']:
+    if sort in ['titulo', 'fecha']:
         if order == 'desc':
-            query = query.order_by(db.desc(getattr(Documento, sort_by)))
+            query = query.order_by(db.desc(getattr(Documento, sort)))
         else:
-            query = query.order_by(getattr(Documento, sort_by))
+            query = query.order_by(getattr(Documento, sort))
 
     # Aplicar paginación
     documentos_paginados = query.paginate(page=page, per_page=per_page)
@@ -43,6 +43,13 @@ def get_documentos():
         'items': [documento.format() for documento in documentos_paginados.items]
     }
     return jsonify(resultado)
+
+@bp.route('/documentos/<int:id>/', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_documento(id):
+    documento = Documento.query.get_or_404(id)
+    return jsonify(documento.format())
 
 @bp.route('/colecciones', methods=['GET'])
 @limiter.limit("10/minute")
