@@ -47,7 +47,7 @@ def get_documentos():
     return jsonify(resultado)
 
 @bp.route('/colecciones', methods=['GET'])
-@limiter.limit("1/minute")
+@limiter.limit("10/minute")
 def get_colecciones():
     nombre_coleccion = request.args.get('nombre_coleccion')
 
@@ -87,4 +87,4 @@ def ratelimit_error(e):
 
 @bp.route('/')
 def index():
-    return 'This is the API'
+    return jsonify(message="Welcome to the API")
