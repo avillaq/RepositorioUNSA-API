@@ -9,7 +9,6 @@ from app.extensions import db, limiter, cache
 def get_documentos():
     titulo = request.args.get('titulo')
     fecha = request.args.get('fecha')
-    uri = request.args.get('uri')
 
     # Parametros para ordenar
     sort_by = request.args.get('sort_by', 'titulo')  # Por defecto es el título
@@ -26,11 +25,9 @@ def get_documentos():
         query = query.filter(Documento.titulo.like(f'%{titulo}%'))
     if fecha:
         query = query.filter_by(fecha=fecha)
-    if uri:
-        query = query.filter_by(uri=uri)
 
     # Ordenar la consulta
-    if sort_by in ['titulo', 'fecha', 'uri']:
+    if sort_by in ['titulo', 'fecha']:
         if order == 'desc':
             query = query.order_by(db.desc(getattr(Documento, sort_by)))
         else:
