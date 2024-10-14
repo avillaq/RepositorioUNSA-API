@@ -10,31 +10,33 @@ def get_documentos():
     titulo = request.args.get('titulo')
     fecha = request.args.get('fecha')
 
+    # TODO: Agregar filtros adicionales: autor, coleccion y palabra clave
+
     # Parametros para ordenar
     sort = request.args.get('sort', 'titulo')  # Por defecto es el título
     order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
 
     # Paginación
     page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
-    per_page = request.args.get('per_page', 10, type=int)  # Resultados por página. 10 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
 
-    query = Documento.query
+    documentos = Documento.query
 
     # Filtrar la consulta
     if titulo:
-        query = query.filter(Documento.titulo.like(f'%{titulo}%'))
+        documentos = documentos.filter(Documento.titulo.like(f'%{titulo}%'))
     if fecha:
-        query = query.filter_by(fecha=fecha)
+        documentos = documentos.filter_by(fecha=fecha)
 
     # Ordenar la consulta
     if sort in ['titulo', 'fecha']:
         if order == 'desc':
-            query = query.order_by(db.desc(getattr(Documento, sort)))
+            documentos = documentos.order_by(db.desc(getattr(Documento, sort)))
         else:
-            query = query.order_by(getattr(Documento, sort))
+            documentos = documentos.order_by(getattr(Documento, sort))
 
     # Aplicar paginación
-    documentos_paginados = query.paginate(page=page, per_page=per_page)
+    documentos_paginados = documentos.paginate(page=page, per_page=limit)
 
     resultado = {
         'page': documentos_paginados.page,
@@ -93,6 +95,51 @@ def get_colecciones():
 def get_coleccion(id):
     coleccion = Coleccion.query.get_or_404(id)
     return jsonify(coleccion.format())
+
+@bp.route('/colecciones/<int:id>/documentos', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_documentos_de_coleccion(id):
+    coleccion = Coleccion.query.get_or_404(id)
+
+    titulo = request.args.get('titulo')
+    fecha = request.args.get('fecha')
+
+    # TODO: Agregar filtros adicionales: autor, palabra clave
+
+    # Ordenar
+    sort = request.args.get('sort', 'titulo')  # Por defecto es el título
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
+
+    documentos = Documento.query.filter_by(id_coleccion=coleccion.id_coleccion)
+
+    # Filtrar la consulta
+    if titulo:
+        documentos = documentos.filter(Documento.titulo.like(f'%{titulo}%'))
+    if fecha:
+        documentos = documentos.filter_by(fecha=fecha)
+
+    # Ordenar la consulta
+    if sort in ['titulo', 'fecha']:
+        if order == 'desc':
+            documentos = documentos.order_by(db.desc(getattr(Documento, sort)))
+        else:
+            documentos = documentos.order_by(getattr(Documento, sort))
+            
+    # Aplicar paginación
+    documentos_paginados = documentos.paginate(page=page, per_page=limit)
+
+    resultado = {
+        'page': documentos_paginados.page,
+        'total_pages': documentos_paginados.pages,
+        'total_items': documentos_paginados.total,
+        'items': [documento.format() for documento in documentos_paginados.items]
+    }
+    return jsonify(resultado)
 
 @bp.errorhandler(429)
 def ratelimit_error(e):
