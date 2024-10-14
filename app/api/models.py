@@ -86,3 +86,18 @@ class PalabraClave(db.Model):
             'id': self.id_palabra_clave,
             'palabra_clave': self.palabra_clave,
         }
+
+class Documento_PalabraClave(db.Model):
+    __tablename__ = 'documento_palabrasclave'
+
+    id_documento = db.Column(db.Integer, primary_key=True)
+    id_palabra_clave = db.Column(db.Integer, primary_key=True)
+
+    def __repr__(self):
+        return f"<Documento_PalabraClave {self.id_documento}>"
+
+    def format(self):
+        return {
+            'id_documento': self.id_documento,
+            'id_palabra_clave': self.id_palabra_clave,
+        }
