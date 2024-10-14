@@ -58,7 +58,7 @@ class Autor(db.Model):
         }
 
 class Documento_Autor(db.Model):
-    __tablename__ = 'documentos_autores'
+    __tablename__ = 'documento_autores'
 
     id_documento = db.Column(db.Integer, primary_key=True)
     id_autor = db.Column(db.Integer, primary_key=True)

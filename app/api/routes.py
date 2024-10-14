@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from app.api.models import Documento, Coleccion, Autor
+from app.api.models import Documento, Coleccion, Autor, Documento_Autor
 from app.api import bp
 from app.extensions import db, limiter, cache
 
@@ -203,7 +203,7 @@ def get_documentos_de_autor(id):
     page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
     limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
 
-    documentos = Documento.query.filter_by(id_editor=autor.id_autor)
+    documentos = Documento.query.join(Documento_Autor, Documento.id_documento == Documento_Autor.id_documento).filter(Documento_Autor.id_autor == autor.id_autor)
 
     # Filtrar la consulta
     if titulo:
