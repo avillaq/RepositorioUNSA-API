@@ -272,6 +272,51 @@ def get_palabra_clave(id):
     palabra_clave = PalabraClave.query.get_or_404(id)
     return jsonify(palabra_clave.format())
 
+@bp.route('/palabras_clave/<int:id>/documentos', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_documentos_de_palabra_clave(id):
+    palabra_clave = PalabraClave.query.get_or_404(id)
+
+    titulo = request.args.get('titulo')
+    fecha = request.args.get('fecha')
+
+    # TODO: Agregar filtros adicionales: autor y coleccion
+
+    # Ordenar
+    sort = request.args.get('sort', 'titulo')  # Por defecto es el título
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
+
+    documentos = Documento.query.join(Documento_PalabraClave, Documento.id_documento == Documento_PalabraClave.id_documento).filter(Documento_PalabraClave.id_palabra_clave == palabra_clave.id_palabra_clave)
+
+    # Filtrar la consulta
+    if titulo:
+        documentos = documentos.filter(Documento.titulo.like(f'%{titulo}%'))
+    if fecha:
+        documentos = documentos.filter_by(fecha=fecha)
+
+    # Ordenar la consulta
+    if sort in ['titulo', 'fecha']:
+        if order == 'desc':
+            documentos = documentos.order_by(db.desc(getattr(Documento, sort)))
+        else:
+            documentos = documentos.order_by(getattr(Documento, sort))
+
+    # Aplicar paginación
+    documentos_paginados = documentos.paginate(page=page, per_page=limit)
+
+    resultado = {
+        'page': documentos_paginados.page,
+        'total_pages': documentos_paginados.pages,
+        'total_items': documentos_paginados.total,
+        'items': [documento.format() for documento in documentos_paginados.items]
+    }    
+    return jsonify(resultado)
+
 @bp.errorhandler(429)
 def ratelimit_error(e):
     return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
