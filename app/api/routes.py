@@ -76,7 +76,28 @@ def get_palabras_clave_de_documento(id):
     }   
     return jsonify(resultado)
 
-# TODO: /documentos/<id_documento>/autores
+@bp.route('/documentos/<int:id>/autores', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_autores_de_documento(id):
+    documento = Documento.query.get_or_404(id)
+
+    # Ordenar
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+    
+    autores = Autor.query.join(Documento_Autor, Documento_Autor.id_autor == Autor.id_autor).filter(Documento_Autor.id_documento == documento.id_documento)
+            
+    # Ordenar la consulta
+    if order == 'desc':
+        autores = autores.order_by(db.desc(Autor.nombre_autor))
+    else:
+        autores = autores.order_by(Autor.nombre_autor)
+          
+    resultado = {
+        'total_items': len(autores.all()),
+        'items': [autor.format() for autor in autores.all()]
+    }
+    return jsonify(resultado)
 
 @bp.route('/colecciones', methods=['GET'])
 @limiter.limit("10/minute")
