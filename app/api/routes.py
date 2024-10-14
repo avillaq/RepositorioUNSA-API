@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from app.api.models import Documento, Coleccion
+from app.api.models import Documento, Coleccion, Autor
 from app.api import bp
 from app.extensions import db, limiter, cache
 
@@ -66,20 +66,20 @@ def get_colecciones():
     page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
     per_page = request.args.get('per_page', 10, type=int)  # Resultados por página. 10 por defecto
 
-    query = Coleccion.query
+    colecciones = Coleccion.query
 
     # Filtrar la consulta
     if nombre_coleccion:
-        query = query.filter(Coleccion.nombre_coleccion.like(f'%{nombre_coleccion}%'))
+        colecciones = colecciones.filter(Coleccion.nombre_coleccion.like(f'%{nombre_coleccion}%'))
 
     # Ordenar la consulta
     if order == 'desc':
-        query = query.order_by(db.desc(Coleccion.nombre_coleccion))
+        colecciones = colecciones.order_by(db.desc(Coleccion.nombre_coleccion))
     else:
-        query = query.order_by(Coleccion.nombre_coleccion)
+        colecciones = colecciones.order_by(Coleccion.nombre_coleccion)
 
     # Aplicar paginación
-    colecciones_paginados = query.paginate(page=page, per_page=per_page)
+    colecciones_paginados = colecciones.paginate(page=page, per_page=per_page)
 
     resultado = {
         'page': colecciones_paginados.page,
@@ -140,6 +140,49 @@ def get_documentos_de_coleccion(id):
         'items': [documento.format() for documento in documentos_paginados.items]
     }
     return jsonify(resultado)
+
+@bp.route('/autores', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_autores():
+    nombre_autor = request.args.get('nombre_autor')
+
+    # Ordenar
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
+
+    autores = Autor.query
+
+    # Filtrar la consulta
+    if nombre_autor:
+        autores = autores.filter(Autor.nombre_autor.like(f'%{nombre_autor}%'))
+
+    # Ordenar la consulta
+    if order == 'desc':
+        autores = autores.order_by(db.desc(Autor.nombre_autor))
+    else:
+        autores = autores.order_by(Autor.nombre_autor)
+
+    # Aplicar paginación
+    autores_paginados = autores.paginate(page=page, per_page=limit)
+
+    resultado = {
+        'page': autores_paginados.page,
+        'total_pages': autores_paginados.pages,
+        'total_items': autores_paginados.total,
+        'items': [autor.format() for autor in autores_paginados.items]
+    }
+    return jsonify(resultado)
+
+@bp.route('/autores/<int:id>/', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_autor(id):
+    autor = Autor.query.get_or_404(id)
+    return jsonify(autor.format())
 
 @bp.errorhandler(429)
 def ratelimit_error(e):
