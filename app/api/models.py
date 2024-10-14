@@ -56,3 +56,18 @@ class Autor(db.Model):
             'id': self.id_autor,
             'nombre_autor': self.nombre_autor,
         }
+
+class Documento_Autor(db.Model):
+    __tablename__ = 'documentos_autores'
+
+    id_documento = db.Column(db.Integer, primary_key=True)
+    id_autor = db.Column(db.Integer, primary_key=True)
+
+    def __repr__(self):
+        return f"<Documento_Autor {self.id_documento}>"
+
+    def format(self):
+        return {
+            'id_documento': self.id_documento,
+            'id_autor': self.id_autor,
+        }
