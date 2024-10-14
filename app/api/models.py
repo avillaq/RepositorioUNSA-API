@@ -41,3 +41,18 @@ class Coleccion(db.Model):
             'id': self.id_coleccion,
             'nombre_coleccion': self.nombre_coleccion,
         }
+    
+class Autor(db.Model):
+    __tablename__ = 'autores'
+
+    id_autor = db.Column(db.Integer, primary_key=True)
+    nombre_autor = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<Autor {self.nombre_autor}>"
+
+    def format(self):
+        return {
+            'id': self.id_autor,
+            'nombre_autor': self.nombre_autor,
+        }
