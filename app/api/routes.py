@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from app.api.models import Documento, Coleccion, Autor, Documento_Autor, PalabraClave, Documento_PalabraClave
+from app.api.models import Documento, Coleccion, Autor, Documento_Autor, PalabraClave, Documento_PalabraClave, Editor
 from app.api import bp
 from app.extensions import db, limiter, cache
 
@@ -52,6 +52,10 @@ def get_documentos():
 def get_documento(id):
     documento = Documento.query.get_or_404(id)
     return jsonify(documento.format())
+
+# TODO: /documentos/<id_documento>/palabras_clave
+
+# TODO: /documentos/<id_documento>/autores
 
 @bp.route('/colecciones', methods=['GET'])
 @limiter.limit("10/minute")
@@ -316,6 +320,21 @@ def get_documentos_de_palabra_clave(id):
         'items': [documento.format() for documento in documentos_paginados.items]
     }    
     return jsonify(resultado)
+
+@bp.route('/editores', methods=['GET'])
+@limiter.limit("10/minute")
+def get_editores():
+    editores = Editor.query.all()
+    resultado = {
+        'items': [editor.format() for editor in editores]
+    }
+    return jsonify(resultado)
+
+@bp.route('/editores/<int:id>/', methods=['GET'])
+@limiter.limit("10/minute")
+def get_editor(id):
+    editor = Editor.query.get_or_404(id)
+    return jsonify(editor.format())
 
 @bp.errorhandler(429)
 def ratelimit_error(e):
