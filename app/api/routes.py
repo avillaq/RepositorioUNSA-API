@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from app.api.models import Documento, Coleccion, Autor, Documento_Autor
+from app.api.models import Documento, Coleccion, Autor, Documento_Autor, PalabraClave, Documento_PalabraClave
 from app.api import bp
 from app.extensions import db, limiter, cache
 
@@ -228,6 +228,49 @@ def get_documentos_de_autor(id):
         'items': [documento.format() for documento in documentos_paginados.items]
     }
     return jsonify(resultado)
+
+@bp.route('/palabras_clave', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_palabras_clave():
+    palabra_clave = request.args.get('palabra_clave')
+
+    # Ordenar
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
+
+    palabras_clave = PalabraClave.query
+
+    # Filtrar la consulta
+    if palabra_clave:
+        palabras_clave = palabras_clave.filter(PalabraClave.palabra_clave.like(f'%{palabra_clave}%'))
+
+    # Ordenar la consulta
+    if order == 'desc':
+        palabras_clave = palabras_clave.order_by(db.desc(PalabraClave.palabra_clave))
+    else:
+        palabras_clave = palabras_clave.order_by(PalabraClave.palabra_clave)
+
+    # Aplicar paginación
+    palabras_clave_paginados = palabras_clave.paginate(page=page, per_page=limit)
+
+    resultado = {
+        'page': palabras_clave_paginados.page,
+        'total_pages': palabras_clave_paginados.pages,
+        'total_items': palabras_clave_paginados.total,
+        'items': [palabra_clave.format() for palabra_clave in palabras_clave_paginados.items]
+    }
+    return jsonify(resultado)
+
+@bp.route('/palabras_clave/<int:id>/', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_palabra_clave(id):
+    palabra_clave = PalabraClave.query.get_or_404(id)
+    return jsonify(palabra_clave.format())
 
 @bp.errorhandler(429)
 def ratelimit_error(e):
