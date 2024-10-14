@@ -53,7 +53,28 @@ def get_documento(id):
     documento = Documento.query.get_or_404(id)
     return jsonify(documento.format())
 
-# TODO: /documentos/<id_documento>/palabras_clave
+@bp.route('/documentos/<int:id>/palabras_clave', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_palabras_clave_de_documento(id):
+    documento = Documento.query.get_or_404(id)
+
+    # Ordenar
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    palabras_clave = PalabraClave.query.join(Documento_PalabraClave, Documento_PalabraClave.id_palabra_clave == PalabraClave.id_palabra_clave).filter(Documento_PalabraClave.id_documento == documento.id_documento)
+
+    # Ordenar la consulta
+    if order == 'desc':
+        palabras_clave = palabras_clave.order_by(db.desc(PalabraClave.palabra_clave))
+    else:
+        palabras_clave = palabras_clave.order_by(PalabraClave.palabra_clave)
+
+    resultado = {
+        'total_items': len(palabras_clave.all()),
+        'items': [palabra_clave.format() for palabra_clave in palabras_clave.all()]
+    }   
+    return jsonify(resultado)
 
 # TODO: /documentos/<id_documento>/autores
 
@@ -326,6 +347,7 @@ def get_documentos_de_palabra_clave(id):
 def get_editores():
     editores = Editor.query.all()
     resultado = {
+        'total_items': len(editores),
         'items': [editor.format() for editor in editores]
     }
     return jsonify(resultado)
