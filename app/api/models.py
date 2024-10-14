@@ -101,3 +101,18 @@ class Documento_PalabraClave(db.Model):
             'id_documento': self.id_documento,
             'id_palabra_clave': self.id_palabra_clave,
         }
+    
+class Editor(db.Model):
+    __tablename__ = 'editores'
+
+    id_editor = db.Column(db.Integer, primary_key=True)
+    nombre_editor = db.Column(db.String(255), nullable=False)
+
+    def __repr__(self):
+        return f"<Editor {self.nombre_editor}>"
+
+    def format(self):
+        return {
+            'id': self.id_editor,
+            'nombre_editor': self.nombre_editor,
+        }
