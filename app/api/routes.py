@@ -184,6 +184,51 @@ def get_autor(id):
     autor = Autor.query.get_or_404(id)
     return jsonify(autor.format())
 
+@bp.route('/autores/<int:id>/documentos', methods=['GET'])
+@limiter.limit("10/minute")
+@cache.cached(query_string=True)
+def get_documentos_de_autor(id):
+    autor = Autor.query.get_or_404(id)
+
+    titulo = request.args.get('titulo')
+    fecha = request.args.get('fecha')
+
+    # TODO: Agregar filtros adicionales: coleccion y palabra clave
+
+    # Ordenar
+    sort = request.args.get('sort', 'titulo')  # Por defecto es el título
+    order = request.args.get('order', 'asc')  # Por defecto en orden ascendente
+
+    # Paginación
+    page = request.args.get('page', 1, type=int)  # Página actual. 1 por defecto
+    limit = request.args.get('limit', 10, type=int)  # Resultados por página. 10 por defecto
+
+    documentos = Documento.query.filter_by(id_editor=autor.id_autor)
+
+    # Filtrar la consulta
+    if titulo:
+        documentos = documentos.filter(Documento.titulo.like(f'%{titulo}%'))
+    if fecha:
+        documentos = documentos.filter_by(fecha=fecha)
+
+    # Ordenar la consulta
+    if sort in ['titulo', 'fecha']:
+        if order == 'desc':
+            documentos = documentos.order_by(db.desc(getattr(Documento, sort)))
+        else:
+            documentos = documentos.order_by(getattr(Documento, sort))
+
+    # Aplicar paginación
+    documentos_paginados = documentos.paginate(page=page, per_page=limit)
+
+    resultado = {
+        'page': documentos_paginados.page,
+        'total_pages': documentos_paginados.pages,
+        'total_items': documentos_paginados.total,
+        'items': [documento.format() for documento in documentos_paginados.items]
+    }
+    return jsonify(resultado)
+
 @bp.errorhandler(429)
 def ratelimit_error(e):
     return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
